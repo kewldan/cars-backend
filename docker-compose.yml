@@ -6,6 +6,8 @@ services:
     networks:
       - cars-backend
       - sms-provider-network
+    env_file:
+      - .env
     volumes:
       - ./data:/usr/app/data
     expose:
