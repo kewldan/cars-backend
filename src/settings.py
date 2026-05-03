@@ -15,7 +15,10 @@ class Settings(BaseSettings):
     TG_API_ID: int = 0
     TG_API_HASH: str = ""
     TG_SESSION_NAME: str = "georgiancars"
-    TG_SESSION_DIR: str = "sessions"
+    TG_SESSION_DIR: str = "data/sessions"
+
+    QWEN_BASE_URL: str = "http://localhost:11434/v1"
+    QWEN_MODEL: str = "qwen2.5:7b"
 
 
 settings = Settings()

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "GeorgianCars API"
 requires-python = ">=3.13"
 dependencies = [
+    "aiohttp>=3.13.5",
     "beanie~=2.1.0",
     "fastapi~=0.136.1",
     "pydantic~=2.13.3",
