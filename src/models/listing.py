@@ -45,8 +45,10 @@ class Listing(Document):
     price_rating_rank: int = 2
     fair_price: int
 
+    vin: str = ""
     vin_checked: bool = False
     customs_cleared: bool = False
+    sold: bool = False
     has_photos: bool = True
     photos: list[str] = []
 

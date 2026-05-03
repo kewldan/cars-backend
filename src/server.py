@@ -1,8 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 import db
 from routers import facets, favorites, health, listings, map as map_router, saved_searches
@@ -34,6 +36,10 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["Cache-Control"],
 )
+
+_images_dir = Path("data/images")
+_images_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/images", StaticFiles(directory=str(_images_dir)), name="images")
 
 app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(listings.router, prefix="/listings", tags=["listings"])

@@ -34,8 +34,10 @@ class ListingOut(CamelModel):
     currency: Currency = "USD"
     price_rating: PriceRating
     fair_price: int
+    vin: str = ""
     vin_checked: bool
     customs_cleared: bool
+    sold: bool = False
     has_photos: bool
     photos: list[str]
     channel: TgChannelOut
@@ -74,7 +76,9 @@ class ListingOut(CamelModel):
             currency=doc.currency,
             price_rating=doc.price_rating,
             fair_price=doc.fair_price,
+            vin=doc.vin,
             vin_checked=doc.vin_checked,
+            sold=doc.sold,
             customs_cleared=doc.customs_cleared,
             has_photos=doc.has_photos,
             photos=doc.photos,

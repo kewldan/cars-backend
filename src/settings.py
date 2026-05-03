@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     QWEN_BASE_URL: str = "http://localhost:11434/v1"
     QWEN_MODEL: str = "qwen2.5:7b"
+    QWEN_TIMEOUT: int = 600
+    QWEN_THINKING: bool = False
 
 
 settings = Settings()
