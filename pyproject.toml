@@ -12,8 +12,8 @@ dependencies = [
     "pydantic-settings~=2.14.0",
     "pymongo~=4.17.0",
     "pyrofork>=2.3.69",
-    "tgcrypto>=1.2.5",
     "uvicorn[standard]~=0.46.0",
+    "tgcrypto-pyrofork>=1.2.6",
     "uvloop~=0.22.1 ; sys_platform == 'darwin' or sys_platform == 'linux'",
 ]
 
