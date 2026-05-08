@@ -27,12 +27,16 @@ class SavedSearchFilters(BaseModel):
     channel: str | None = None
     vin_only: bool = False
     price_only: bool = False
+    bargain: bool = False
+    customs_cleared: bool = False
 
 
 class SavedSearch(Document):
     user_id: Annotated[str, Indexed()]
     name: str
     filters: SavedSearchFilters
+    search: str = ""
+    sort: str | None = None
     notify: bool = True
     last_match_at: datetime | None = None
     fresh_count: int = 0

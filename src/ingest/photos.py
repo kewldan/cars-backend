@@ -11,7 +11,9 @@ IMAGES_DIR = Path("data/images")
 WEBP_QUALITY = 82
 
 
-async def download_post_photos(client: Client, msg: Message, listing_id: str) -> list[str]:
+async def download_post_photos(
+    client: Client, msg: Message, listing_id: str
+) -> list[str]:
     """Download photos from a Telegram post (or its media group) as webp files
     under data/images/{listing_id}/. Returns the list of /images/... URL paths
     suitable for storing in Listing.photos."""

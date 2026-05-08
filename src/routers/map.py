@@ -36,7 +36,9 @@ async def cities(response: Response) -> dict:
         coords = CITY_COORDS.get(name)
         if not coords:
             continue
-        cities_out.append({"name": name, "count": count, "lat": coords[0], "lng": coords[1]})
+        cities_out.append(
+            {"name": name, "count": count, "lat": coords[0], "lng": coords[1]}
+        )
     cities_out.sort(key=lambda c: -c["count"])
     response.headers["Cache-Control"] = CACHE_HEADER
     return {"cities": cities_out, "total": total}
@@ -50,7 +52,11 @@ async def city_listings(
 ) -> dict:
     if name not in CITY_COORDS:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown city")
-    docs = await Listing.find(Listing.city == name, sort=[("posted_at", -1)]).limit(limit).to_list()
+    docs = (
+        await Listing.find(Listing.city == name, sort=[("posted_at", -1)])
+        .limit(limit)
+        .to_list()
+    )
     response.headers["Cache-Control"] = CACHE_HEADER
     return {
         "items": [ListingOut.from_doc(d).model_dump(by_alias=True) for d in docs],

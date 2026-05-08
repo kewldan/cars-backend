@@ -7,7 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 import db
-from routers import facets, favorites, health, listings, map as map_router, saved_searches
+from routers import (
+    facets,
+    favorites,
+    health,
+    listings,
+    map as map_router,
+    saved_searches,
+)
 from settings import settings
 
 log = logging.getLogger(__name__)

@@ -11,6 +11,10 @@ SORT_SPECS: dict[str, list[tuple[str, int]]] = {
         ("price_rating_rank", pymongo.ASCENDING),
         ("posted_at", pymongo.DESCENDING),
     ],
+    "bargain": [
+        ("bargain", pymongo.DESCENDING),
+        ("posted_at", pymongo.DESCENDING),
+    ],
 }
 
 DEFAULT_SORT = "newest"

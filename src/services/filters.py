@@ -60,6 +60,10 @@ def build_query(f: ListingFilters | SavedSearchFilters) -> dict[str, Any]:
             existing["$gt"] = max(existing.get("$gt", 0), 0)
         else:
             where["price"] = {"$gt": 0}
+    if getattr(f, "bargain", False):
+        where["bargain"] = True
+    if getattr(f, "customs_cleared", False):
+        where["customs_cleared"] = True
 
     return where
 
@@ -88,6 +92,8 @@ def filters_to_saved(f: ListingFilters) -> SavedSearchFilters:
         channel=f.channel,
         vin_only=f.vin_only,
         price_only=f.price_only,
+        bargain=f.bargain,
+        customs_cleared=f.customs_cleared,
     )
 
 

@@ -14,15 +14,25 @@ from schemas.saved_search import (
     SavedSearchUpdate,
 )
 from services.filters import build_query, describe_filters
+from services.sorting import resolve_sort
 
 router = APIRouter()
+
+
+def _saved_where(doc: SavedSearch) -> dict:
+    where = build_query(doc.filters)
+    if doc.search:
+        where["$text"] = {"$search": doc.search}
+    return where
 
 
 def _parse_object_id(raw: str) -> PydanticObjectId:
     try:
         return PydanticObjectId(raw)
     except Exception as exc:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Saved search not found") from exc
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, "Saved search not found"
+        ) from exc
 
 
 async def _owned(saved_id: str, device_id: str) -> SavedSearch:
@@ -38,27 +48,42 @@ async def list_saved(device_id: DeviceId) -> dict:
     docs = await SavedSearch.find(
         SavedSearch.user_id == device_id, sort=[("created_at", -1)]
     ).to_list()
-    items = [SavedSearchOut.from_doc(d, describe_filters(d.filters)).model_dump(by_alias=True) for d in docs]
+    items = [
+        SavedSearchOut.from_doc(d, describe_filters(d.filters)).model_dump(
+            by_alias=True
+        )
+        for d in docs
+    ]
     return {"items": items}
 
 
-@router.post("", response_model=SavedSearchOut, response_model_by_alias=True, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=SavedSearchOut,
+    response_model_by_alias=True,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_saved(payload: SavedSearchIn, device_id: DeviceId) -> SavedSearchOut:
-    total = await Listing.find(build_query(payload.filters)).count()
     doc = SavedSearch(
         user_id=device_id,
         name=payload.name,
         filters=payload.filters,
+        search=payload.search,
+        sort=payload.sort,
         notify=payload.notify,
-        total_count=total,
+        total_count=0,
         fresh_count=0,
-        last_match_at=datetime.now(timezone.utc) if total else None,
     )
+    total = await Listing.find(_saved_where(doc)).count()
+    doc.total_count = total
+    doc.last_match_at = datetime.now(timezone.utc) if total else None
     await doc.insert()
     return SavedSearchOut.from_doc(doc, describe_filters(doc.filters))
 
 
-@router.patch("/{saved_id}", response_model=SavedSearchOut, response_model_by_alias=True)
+@router.patch(
+    "/{saved_id}", response_model=SavedSearchOut, response_model_by_alias=True
+)
 async def update_saved(
     saved_id: str, payload: SavedSearchUpdate, device_id: DeviceId
 ) -> SavedSearchOut:
@@ -66,8 +91,8 @@ async def update_saved(
     update = payload.model_dump(exclude_unset=True)
     for k, v in update.items():
         setattr(doc, k, v)
-    if "filters" in update:
-        doc.total_count = await Listing.find(build_query(doc.filters)).count()
+    if "filters" in update or "search" in update:
+        doc.total_count = await Listing.find(_saved_where(doc)).count()
     await doc.save()
     return SavedSearchOut.from_doc(doc, describe_filters(doc.filters))
 
@@ -79,10 +104,12 @@ async def delete_saved(saved_id: str, device_id: DeviceId) -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/{saved_id}/run", response_model=SavedSearchRunOut, response_model_by_alias=True)
+@router.post(
+    "/{saved_id}/run", response_model=SavedSearchRunOut, response_model_by_alias=True
+)
 async def run_saved(saved_id: str, device_id: DeviceId) -> SavedSearchRunOut:
     doc = await _owned(saved_id, device_id)
-    where = build_query(doc.filters)
+    where = _saved_where(doc)
 
     last_at = doc.last_match_at
     fresh_count = 0
@@ -90,7 +117,8 @@ async def run_saved(saved_id: str, device_id: DeviceId) -> SavedSearchRunOut:
         fresh_where = {**where, "posted_at": {"$gt": last_at}}
         fresh_count = await Listing.find(fresh_where).count()
 
-    items_docs = await Listing.find(where, sort=[("posted_at", -1)]).limit(24).to_list()
+    sort_spec = resolve_sort(doc.sort)
+    items_docs = await Listing.find(where, sort=sort_spec).limit(24).to_list()
     total = await Listing.find(where).count()
 
     doc.total_count = total

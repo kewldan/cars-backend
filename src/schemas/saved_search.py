@@ -12,14 +12,20 @@ from .listing import ListingOut
 class SavedSearchIn(CamelModel):
     name: str
     filters: SavedSearchFilters
+    search: str = ""
+    sort: str | None = None
     notify: bool = True
 
 
 class SavedSearchUpdate(CamelModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="ignore")
+    model_config = ConfigDict(
+        alias_generator=to_camel, populate_by_name=True, extra="ignore"
+    )
 
     name: str | None = None
     filters: SavedSearchFilters | None = None
+    search: str | None = None
+    sort: str | None = None
     notify: bool | None = None
 
 
@@ -28,6 +34,8 @@ class SavedSearchOut(CamelModel):
     name: str
     crit: str
     filters: SavedSearchFilters
+    search: str = ""
+    sort: str | None = None
     notify: bool = True
     total: int = 0
     fresh: int = 0
@@ -40,6 +48,8 @@ class SavedSearchOut(CamelModel):
             name=doc.name,
             crit=crit,
             filters=doc.filters,
+            search=doc.search,
+            sort=doc.sort,
             notify=doc.notify,
             total=doc.total_count,
             fresh=doc.fresh_count,

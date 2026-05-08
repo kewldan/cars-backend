@@ -79,7 +79,10 @@ class Listing(Document):
             "price",
             [("posted_at", pymongo.DESCENDING)],
             [("year", pymongo.DESCENDING)],
-            [("price_rating_rank", pymongo.ASCENDING), ("posted_at", pymongo.DESCENDING)],
+            [
+                ("price_rating_rank", pymongo.ASCENDING),
+                ("posted_at", pymongo.DESCENDING),
+            ],
             [("make", pymongo.ASCENDING), ("model", pymongo.ASCENDING)],
             [("location", pymongo.GEOSPHERE)],
             pymongo.IndexModel(
@@ -93,5 +96,7 @@ class Listing(Document):
                 default_language="none",
                 name="listing_text_idx",
             ),
-            pymongo.IndexModel([("id_code", pymongo.ASCENDING)], unique=True, name="id_code_unique"),
+            pymongo.IndexModel(
+                [("id_code", pymongo.ASCENDING)], unique=True, name="id_code_unique"
+            ),
         ]

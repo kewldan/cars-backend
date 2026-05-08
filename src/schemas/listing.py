@@ -57,7 +57,7 @@ class ListingOut(CamelModel):
             posted = posted.replace(tzinfo=timezone.utc)
         delta = n - posted
         days = delta.days
-        hours = (delta.seconds // 3600)
+        hours = delta.seconds // 3600
         return cls(
             id=doc.id_code,
             make=doc.make,
@@ -82,7 +82,9 @@ class ListingOut(CamelModel):
             customs_cleared=doc.customs_cleared,
             has_photos=doc.has_photos,
             photos=doc.photos,
-            channel=TgChannelOut(id=doc.channel.id, name=doc.channel.name, subs=doc.channel.subs),
+            channel=TgChannelOut(
+                id=doc.channel.id, name=doc.channel.name, subs=doc.channel.subs
+            ),
             posted_days=days,
             posted_hours=hours,
             summary=doc.summary,
@@ -108,6 +110,7 @@ SortKey = Literal[
     "mileage_asc",
     "year_desc",
     "year_asc",
+    "bargain",
 ]
 
 
@@ -138,3 +141,5 @@ class ListingFilters(BaseModel):
     channel: str | None = None
     vin_only: bool = False
     price_only: bool = False
+    bargain: bool = False
+    customs_cleared: bool = False

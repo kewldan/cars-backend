@@ -17,7 +17,9 @@ async def list_favorites(device_id: DeviceId) -> dict:
     docs = await Listing.find({"id_code": {"$in": listing_ids}}).to_list()
     by_id = {d.id_code: d for d in docs}
     ordered = [by_id[i] for i in listing_ids if i in by_id]
-    return {"items": [ListingOut.from_doc(d).model_dump(by_alias=True) for d in ordered]}
+    return {
+        "items": [ListingOut.from_doc(d).model_dump(by_alias=True) for d in ordered]
+    }
 
 
 @router.get("/ids")

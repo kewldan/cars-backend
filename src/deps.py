@@ -5,9 +5,14 @@ from fastapi import Depends, Header, HTTPException, Query, status
 from schemas.listing import ListingFilters
 
 
-async def get_device_id(x_device_id: Annotated[str | None, Header(alias="X-Device-Id")] = None) -> str:
+async def get_device_id(
+    x_device_id: Annotated[str | None, Header(alias="X-Device-Id")] = None,
+) -> str:
     if not x_device_id or len(x_device_id) < 8:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="X-Device-Id header is required")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="X-Device-Id header is required",
+        )
     return x_device_id
 
 
@@ -47,6 +52,8 @@ async def listing_filters(
     channel: str | None = None,
     vinOnly: bool = False,
     priceOnly: bool = False,
+    bargain: bool = False,
+    customsCleared: bool = False,
 ) -> ListingFilters:
     return ListingFilters(
         q=q,
@@ -71,6 +78,8 @@ async def listing_filters(
         channel=channel,
         vin_only=vinOnly,
         price_only=priceOnly,
+        bargain=bargain,
+        customs_cleared=customsCleared,
     )
 
 

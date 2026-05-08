@@ -81,17 +81,17 @@ class QwenParser:
         "When that header is present, use it as the source of truth for those fields.\n\n"
         "RULES:\n"
         "- If the post advertises multiple cars, parse only the FIRST.\n"
-        "- If the post is not a car-for-sale ad, return {\"is_listing\": false} and null/empty for all other fields.\n"
+        '- If the post is not a car-for-sale ad, return {"is_listing": false} and null/empty for all other fields.\n'
         "- Never invent data. If something isn't stated, the value is null.\n"
         "- If the input is split into '=== ORIGINAL POST ===' and '=== UPDATE (newer reply) ===' blocks, the UPDATE block is authoritative for any field it restates (price, sold, mileage, etc.). Use the ORIGINAL block only as fallback for fields the UPDATE doesn't touch.\n"
-        "- Year \"MM/YYYY\" → just YYYY (e.g. \"03/2023\" → 2023).\n"
+        '- Year "MM/YYYY" → just YYYY (e.g. "03/2023" → 2023).\n'
         "- VIN: copy verbatim, uppercase, only if the post prints a 17-char VIN.\n"
-        "- Engine line: take the leading number as displacement liters; if HP is given inline (e.g. \"(380hp)\"), set `power` from it.\n"
-        "- Fuel cues: TSI/TFSI/MPI → Бензин; TDI → Дизель; \"hybrid\"/\"mild hybrid\"/\"plug-in hybrid\"/\"PHEV\" → Гибрид; \"EV\"/\"electric\"/\"BEV\" → Электро.\n"
+        '- Engine line: take the leading number as displacement liters; if HP is given inline (e.g. "(380hp)"), set `power` from it.\n'
+        '- Fuel cues: TSI/TFSI/MPI → Бензин; TDI → Дизель; "hybrid"/"mild hybrid"/"plug-in hybrid"/"PHEV" → Гибрид; "EV"/"electric"/"BEV" → Электро.\n'
         "- Drive mapping: AWD / 4WD / Quattro / 4Matic / xDrive → Полный; FWD → Передний; RWD → Задний.\n"
         "- City mapping (English → Russian): Tbilisi→Тбилиси, Batumi→Батуми, Kutaisi→Кутаиси, Rustavi→Рустави, Gori→Гори, Zugdidi→Зугдиди, Poti→Поти, Telavi→Телави.\n"
-        "- Price: take the number after the 💵 emoji or \"$\". Ignore parenthetical alt prices like \"(my avto NNNN$)\" and ignore numbers describing monthly installments.\n"
-        "- description: drop the structured English-key header AND the footer (price line, phone/@username, \"Auction link\" line, t.me/wa.me/viber/bid.cars URLs, channel promo blocks like \"GD MOTORS\" / \"Грузинская Лавка\"). Keep only the Russian free-text body that describes the car.\n"
+        '- Price: take the number after the 💵 emoji or "$". Ignore parenthetical alt prices like "(my avto NNNN$)" and ignore numbers describing monthly installments.\n'
+        '- description: drop the structured English-key header AND the footer (price line, phone/@username, "Auction link" line, t.me/wa.me/viber/bid.cars URLs, channel promo blocks like "GD MOTORS" / "Грузинская Лавка"). Keep only the Russian free-text body that describes the car.\n'
         "- Strip phone numbers, @usernames, all URLs, and emoji from `description`.\n"
         "- Output VALID JSON only."
     )
@@ -110,13 +110,21 @@ class QwenParser:
 
     @property
     def _system_prompt(self) -> str:
-        return self.SYSTEM_PROMPT if self.thinking else self.SYSTEM_PROMPT + "\n\n/no_think"
+        return (
+            self.SYSTEM_PROMPT
+            if self.thinking
+            else self.SYSTEM_PROMPT + "\n\n/no_think"
+        )
 
     async def parse(self, text: str) -> ParsedCar | None:
         if not text or not text.strip():
             return None
         prompt = text.strip()
-        log.info("qwen → input (%d chars): %s", len(prompt), prompt[:200].replace("\n", " ⏎ "))
+        log.info(
+            "qwen → input (%d chars): %s",
+            len(prompt),
+            prompt[:200].replace("\n", " ⏎ "),
+        )
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         body_payload: dict[str, object] = {
             "model": self.model,
@@ -151,7 +159,9 @@ class QwenParser:
             log.error("qwen no choices in payload: %r", err)
             raise RuntimeError(f"Qwen endpoint returned no choices: {err!r}")
         content = payload["choices"][0]["message"]["content"]
-        content = re.sub(r"<think>[\s\S]*?</think>", "", content, flags=re.IGNORECASE).strip()
+        content = re.sub(
+            r"<think>[\s\S]*?</think>", "", content, flags=re.IGNORECASE
+        ).strip()
         log.info("qwen ← raw content (%d chars): %s", len(content), content[:1500])
         try:
             data = json.loads(content)

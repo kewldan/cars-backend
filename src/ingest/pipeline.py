@@ -129,7 +129,9 @@ def _apply_update(listing: Listing, car: ParsedCar) -> None:
 async def _record_processed(channel_id: int, message_id: int, reason: str) -> None:
     try:
         await ProcessedPost(
-            channel_id=channel_id, message_id=message_id, reason=reason,
+            channel_id=channel_id,
+            message_id=message_id,
+            reason=reason,
         ).insert()
     except Exception:
         log.debug("processed_post upsert collision for %s/%s", channel_id, message_id)
@@ -149,9 +151,15 @@ async def ingest_channel(
 
         skip_msg_ids: set[int] = {
             p.message_id
-            for p in await ProcessedPost.find(ProcessedPost.channel_id == channel_id).to_list()
+            for p in await ProcessedPost.find(
+                ProcessedPost.channel_id == channel_id
+            ).to_list()
         }
-        log.info("processed-post cache: %d entries for channel %s", len(skip_msg_ids), channel_id)
+        log.info(
+            "processed-post cache: %d entries for channel %s",
+            len(skip_msg_ids),
+            channel_id,
+        )
 
         seen_groups: set[str] = set()
         n = 0
@@ -168,7 +176,11 @@ async def ingest_channel(
             reply = getattr(msg, "reply_to_message", None)
             reply_text = ""
             if reply is not None:
-                reply_text = (getattr(reply, "text", None) or getattr(reply, "caption", None) or "")
+                reply_text = (
+                    getattr(reply, "text", None)
+                    or getattr(reply, "caption", None)
+                    or ""
+                )
             is_update = bool(reply is not None and reply_text)
 
             if is_update:
@@ -207,17 +219,25 @@ async def ingest_channel(
                 if dry_run:
                     log.info(
                         "DRY-RUN UPDATE %s: $%d → $%d, sold=%s",
-                        existing.id_code, existing.price, car.price, car.sold,
+                        existing.id_code,
+                        existing.price,
+                        car.price,
+                        car.sold,
                     )
                 else:
                     _apply_update(existing, car)
                     await existing.save()
                     log.info(
                         "updated %s via reply %s: $%d sold=%s",
-                        existing.id_code, msg.id, existing.price, existing.sold,
+                        existing.id_code,
+                        msg.id,
+                        existing.price,
+                        existing.sold,
                     )
                     await _record_processed(
-                        channel_id, msg.id, f"reply_update_for:{existing.id_code}",
+                        channel_id,
+                        msg.id,
+                        f"reply_update_for:{existing.id_code}",
                     )
                 skip_msg_ids.add(msg.id)
                 n += 1
@@ -227,8 +247,14 @@ async def ingest_channel(
             if dry_run:
                 log.info(
                     "DRY-RUN %s: %s %s %s @ $%d (%s) sold=%s — %d photo(s)",
-                    listing.id_code, listing.make, listing.model, listing.year,
-                    listing.price, listing.city, listing.sold, len(listing.photos),
+                    listing.id_code,
+                    listing.make,
+                    listing.model,
+                    listing.year,
+                    listing.price,
+                    listing.city,
+                    listing.sold,
+                    len(listing.photos),
                 )
                 n += 1
                 continue
@@ -236,12 +262,19 @@ async def ingest_channel(
             await listing.insert()
             log.info(
                 "inserted %s: %s %s %s @ $%d sold=%s — %d photo(s)",
-                listing.id_code, listing.make, listing.model, listing.year,
-                listing.price, listing.sold, len(listing.photos),
+                listing.id_code,
+                listing.make,
+                listing.model,
+                listing.year,
+                listing.price,
+                listing.sold,
+                len(listing.photos),
             )
             if is_update:
                 await _record_processed(
-                    channel_id, msg.id, f"reply_update_for:{listing.id_code}",
+                    channel_id,
+                    msg.id,
+                    f"reply_update_for:{listing.id_code}",
                 )
                 skip_msg_ids.add(msg.id)
             n += 1

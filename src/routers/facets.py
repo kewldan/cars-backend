@@ -69,13 +69,20 @@ async def _load_facets() -> FacetsOut:
     ranges = FacetsRanges(
         price=FacetsRange(min=r.get("price_min") or 0, max=r.get("price_max") or 0),
         year=FacetsRange(min=r.get("year_min") or 0, max=r.get("year_max") or 0),
-        mileage=FacetsRange(min=r.get("mileage_min") or 0, max=r.get("mileage_max") or 0),
-        engine=FacetsRange(min=r.get("engine_min") or 0.0, max=r.get("engine_max") or 0.0),
+        mileage=FacetsRange(
+            min=r.get("mileage_min") or 0, max=r.get("mileage_max") or 0
+        ),
+        engine=FacetsRange(
+            min=r.get("engine_min") or 0.0, max=r.get("engine_max") or 0.0
+        ),
         power=FacetsRange(min=r.get("power_min") or 0, max=r.get("power_max") or 0),
     )
 
     channels_docs = await TgChannel.find_all().to_list()
-    channels = [TgChannelOut(id=str(c.channel_id), name=c.name, subs=c.subs) for c in channels_docs]
+    channels = [
+        TgChannelOut(id=str(c.channel_id), name=c.name, subs=c.subs)
+        for c in channels_docs
+    ]
     channels.sort(key=lambda c: c.name.lower())
 
     return FacetsOut(
@@ -100,5 +107,7 @@ async def get_facets(response: Response) -> FacetsOut:
     else:
         result = await _load_facets()
         _cache["v1"] = (now, result)
-    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+    response.headers["Cache-Control"] = (
+        "public, max-age=300, stale-while-revalidate=600"
+    )
     return result

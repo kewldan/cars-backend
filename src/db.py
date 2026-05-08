@@ -11,7 +11,14 @@ database = client[settings.MONGO_DB]
 async def connect() -> None:
     await init_beanie(
         database=database,
-        document_models=[Listing, TgChannel, SavedSearch, Favorite, ProcessedPost, User],
+        document_models=[
+            Listing,
+            TgChannel,
+            SavedSearch,
+            Favorite,
+            ProcessedPost,
+            User,
+        ],
     )
 
 
