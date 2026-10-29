@@ -16,6 +16,7 @@ services:
       - ./data:/usr/app/data
     expose:
       - 80
+    mem_limit: 256m
     depends_on:
       mongo:
         condition: service_healthy
@@ -23,6 +24,10 @@ services:
   mongo:
     image: mongo:8
     restart: unless-stopped
+    # База маленькая, а сервер общий: по умолчанию кэш занял бы полпамяти.
+    command: ["--wiredTigerCacheSizeGB", "0.25"]
+    mem_limit: 512m
+    cpus: 0.5
     networks:
       - backends
     volumes:
