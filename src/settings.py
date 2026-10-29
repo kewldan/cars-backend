@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     TG_SESSION_DIR: str = "data/sessions"
 
     QWEN_BASE_URL: str = "http://localhost:11434/v1"
+    # Bearer key for hosted OpenAI-compatible endpoints; empty for Ollama & co.
+    QWEN_API_KEY: str = ""
     QWEN_MODEL: str = "qwen2.5:7b"
     QWEN_TIMEOUT: int = 600
     QWEN_THINKING: bool = False

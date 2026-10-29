@@ -24,7 +24,7 @@ uv run src/scripts/ingest_channel.py [channel_id] [--limit N] [--qwen] [--dry-ru
 # default channel is 1525185710; --qwen swaps HeuristicParser → QwenParser
 ```
 
-Docker: `docker compose up --build`. Compose expects two **external** networks (`cars-backend`, `sms-provider-network`) — create them with `docker network create` first or the stack won't come up.
+Docker: `docker compose up --build`. Compose runs the API and MongoDB 8 and expects one **external** network, `cars-backend`, shared with the frontend's nginx — create it with `docker network create cars-backend` first.
 
 There is no test suite yet.
 

@@ -134,13 +134,20 @@ class QwenParser:
             ],
             "temperature": 0,
         }
-        if not self.thinking:
+        # Hosted APIs reject the local servers' template switch.
+        if not self.thinking and not settings.QWEN_API_KEY:
             body_payload["chat_template_kwargs"] = {"enable_thinking": False}
+        headers = (
+            {"Authorization": f"Bearer {settings.QWEN_API_KEY}"}
+            if settings.QWEN_API_KEY
+            else {}
+        )
         t0 = time.monotonic()
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(
                 f"{self.base_url}/chat/completions",
                 json=body_payload,
+                headers=headers,
             ) as resp:
                 status = resp.status
                 body = await resp.text()

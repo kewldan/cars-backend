@@ -72,15 +72,12 @@ uv run src/scripts/ingest_channel.py [channel_id] [--limit N] [--dry-run]
 
 ### Docker
 
-Compose ожидает две **внешние** docker-сети:
-
+Compose поднимает API и MongoDB 8 и ждёт одну **внешнюю** сеть — общую с фронтендом:
 ```bash
 docker network create cars-backend
-docker network create sms-provider-network
 docker compose up --build
 ```
-
-API слушает порт 80 внутри compose-сети (hostname `cars-api`) и наружу не публикуется — подключается через reverse-proxy в сети `cars-backend`. Данные (Redis, сессии, изображения) — в `./data/`.
+API слушает порт 80 внутри compose-сети (hostname `cars-api`) и наружу не публикуется — подключается через reverse-proxy в сети `cars-backend`. Сессии и изображения — в `./data/`, база — в томе `mongo`.
 
 ### Линт и типы
 
@@ -105,6 +102,7 @@ uv run ty check
 | `TG_SESSION_NAME` | `georgiancars` | Имя файла сессии |
 | `TG_SESSION_DIR` | `data/sessions` | Каталог сессий (не коммитить) |
 | `QWEN_BASE_URL` | `http://localhost:11434/v1` | OpenAI-совместимый endpoint LLM |
+| `QWEN_API_KEY` | — | Bearer-ключ для облачного endpoint'а; пусто для Ollama и т.п. |
 | `QWEN_MODEL` | `qwen2.5:7b` | Модель для парсинга |
 | `QWEN_TIMEOUT` | `600` | Таймаут запроса к LLM, сек |
 | `QWEN_THINKING` | `false` | Режим «размышлений» модели |

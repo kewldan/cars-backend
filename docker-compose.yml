@@ -5,35 +5,39 @@ services:
     restart: unless-stopped
     networks:
       - cars-backend
-      - sms-provider-network
+      - backends
     env_file:
       - .env
+    environment:
+      MONGO_URL: mongodb://mongo:27017
+      # Внутри сети слушает 80: так его ждёт nginx фронтенда (cars-api:80).
+      SERVER_PORT: 80
     volumes:
       - ./data:/usr/app/data
     expose:
       - 80
     depends_on:
-      redis:
+      mongo:
         condition: service_healthy
 
-  redis:
-    image: redis:8
-    hostname: 'cars-redis'
+  mongo:
+    image: mongo:8
     restart: unless-stopped
     networks:
-      - cars-backend
+      - backends
     volumes:
-      - ./data/redis:/data
-    command: ["redis-server", "--appendonly", "yes"]
+      - mongo:/data/db
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
-      timeout: 3s
-      retries: 5
+      timeout: 5s
+      retries: 10
 
+volumes:
+  mongo:
 
 networks:
+  # Общая с фронтендом: его nginx ходит сюда как на cars-api.
   cars-backend:
     external: true
-  sms-provider-network:
-    external: true
+  backends:
